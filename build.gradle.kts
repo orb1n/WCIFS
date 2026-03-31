@@ -61,7 +61,7 @@ msPublishing {
         file = modstitch.finalJarTask.get().archiveFile
         displayName = "${modstitch.metadata.modName.get()} ${modstitch.metadata.modVersion.get()}"
         type = STABLE
-        dryRun = true
+        dryRun = providers.gradleProperty("modrinth_token").orNull == null
 
         modrinth {
             accessToken = providers.gradleProperty("modrinth_token").orNull
