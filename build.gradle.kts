@@ -1,142 +1,104 @@
 plugins {
-    `maven-publish`
-    id("fabric-loom")
-    id("me.modmuss50.mod-publish-plugin")
+    id("dev.isxander.modstitch.base") version "0.8.4"
+    id("dev.isxander.modstitch.publishing") version "0.8.4"
 }
 
-version = "${property("mod.version")}+${stonecutter.current.version}"
-group = property("mod.group") as String
-base.archivesName = property("mod.id") as String
-
-repositories {
-    /**
-     * Restricts dependency search of the given [groups] to the [maven URL][url],
-     * improving the setup speed.
-     */
-    fun strictMaven(url: String, alias: String, vararg groups: String) = exclusiveContent {
-        forRepository { maven(url) { name = alias } }
-        filter { groups.forEach(::includeGroup) }
-    }
-    strictMaven("https://www.cursemaven.com", "CurseForge", "curse.maven")
-    strictMaven("https://api.modrinth.com/maven", "Modrinth", "maven.modrinth")
+fun prop(name: String, consumer: (prop: String) -> Unit) {
+    (findProperty(name) as? String?)
+        ?.let(consumer)
 }
 
-dependencies {
-    minecraft("com.mojang:minecraft:${stonecutter.current.version}")
-    mappings("net.fabricmc:yarn:${property("deps.yarn")}:v2")
-    modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
-}
+modstitch {
+    prop("deps.minecraft") { minecraftVersion = it }
 
-loom {
-    accessWidenerPath = project.file("../../src/main/resources/${property("mod.id")}.accesswidener")
-    decompilerOptions.named("vineflower") {
-        options.put("mark-corresponding-synthetics", "1") // Adds names to lambdas - useful for mixins
+    parchment {
+        prop("parchment.version") { mappingsVersion = it }
+        prop("parchment.minecraft") { minecraftVersion = it }
     }
 
-    runConfigs.all {
-        ideConfigGenerated(true)
-        vmArgs("-Dmixin.debug.export=true") // Exports transformed classes for debugging
-        runDir = "../../run" // Shares the run directory between versions
-    }
-}
+    metadata {
+        modId = "wcifs"
+        modName = "WCIFS"
+        modVersion = "1.3.0+${stonecutter.current.project}"
+        modDescription = "This mod tells you how long it is until night when clicking on a bed."
+        modLicense = "CC BY-NC-SA 4.0"
+        modGroup = "dev.bigbrainrobin29"
+        modAuthor = "BigBrainRobin29"
 
-java {
-    withSourcesJar()
-    val requiresJava21: Boolean = stonecutter.eval(stonecutter.current.version, ">=1.20.6")
-    val javaVersion: JavaVersion =
-        if (requiresJava21) JavaVersion.VERSION_21
-        else JavaVersion.VERSION_17
-    targetCompatibility = javaVersion
-    sourceCompatibility = javaVersion
-}
-
-tasks.withType<JavaCompile>().configureEach {
-    options.release.set(16)
-}
-
-tasks {
-    processResources {
-        inputs.property("id", project.property("mod.id"))
-        inputs.property("name", project.property("mod.name"))
-        inputs.property("version", project.property("mod.version"))
-        inputs.property("minecraft", project.property("mod.mc_dep"))
-
-        val fabricApiId = if (stonecutter.eval(stonecutter.current.version, ">=1.19.2")) {
-            "fabric-api"
-        } else {
-            "fabric"
-        }
-
-        val props = mapOf(
-            "id" to project.property("mod.id"),
-            "name" to project.property("mod.name"),
-            "version" to project.property("mod.version"),
-            "minecraft" to project.property("mod.mc_dep"),
-            "fapi_id" to fabricApiId,
-        )
-
-        filesMatching("fabric.mod.json") { expand(props) }
+        replacementProperties.put("mod_modrinth", "https://modrinth.com/mod/wcifs")
+        replacementProperties.put("mod_sources", "https://github.com/BigBrainRobin29/WCIFS")
+        replacementProperties.put("mod_issues", "https://github.com/BigBrainRobin29/WCIFS/issues")
+        replacementProperties.put("minecraft", property("deps.minecraft.constraint") as String)
+        replacementProperties.put("fabric_api", if (stonecutter.eval(stonecutter.current.version, ">=1.19.2")) "fabric-api" else "fabric")
     }
 
-    // Builds the version into a shared folder in `build/libs/${mod version}/`
-    register<Copy>("buildAndCollect") {
-        group = "build"
-        from(remapJar.map { it.archiveFile }, remapSourcesJar.map { it.archiveFile })
-        into(rootProject.layout.buildDirectory.file("libs/${project.property("mod.version")}"))
-        dependsOn("build")
-    }
-}
-
-
-publishMods {
-    file = tasks.remapJar.get().archiveFile
-    additionalFiles.from(tasks.remapSourcesJar.get().archiveFile)
-    displayName = "${project.property("mod.name")} ${project.property("mod.version")}+${stonecutter.current.version}"
-    changelog = rootProject.file("CHANGELOG.md").readText()
-    type = STABLE
-    modLoaders.add("fabric")
-
-    dryRun = providers.gradleProperty("modrinth_token").getOrNull() == null
-
-    val mcVersions = (property("mod.mc_targets") as String)
-        .split(" ")
-        .map { it.trim() }
-
-    modrinth {
-        projectId = property("publish.modrinth").toString()
-        projectDescription = rootProject.file("README.md").readText()
-        accessToken = providers.gradleProperty("modrinth_token")
-        minecraftVersions.addAll(mcVersions)
-        requires("fabric-api")
+    loom {
+        fabricLoaderVersion = "0.18.5"
     }
 
-    /*github {
-        repository = "https://github.com/BigBrainRobin29/DurabilityGuard"
-        commitish = "main"
-    }*/
-}
+    moddevgradle {
+        prop("deps.neoforge") { neoForgeVersion = it }
+        prop("deps.forge") { forgeVersion = it }
 
-/*
-publishing {
-    repositories {
-        maven("...") {
-            name = "..."
-            credentials(PasswordCredentials::class.java)
-            authentication {
-                create<BasicAuthentication>("basic")
+        defaultRuns()
+
+        configureNeoForge {
+            runs.all {
+                disableIdeRun()
             }
         }
     }
 
-    publications {
-        create<MavenPublication>("mavenJava") {
-            groupId = "${property("mod.group")}.${mod.id}"
-            artifactId = mod.version
-            version = mcVersion
+    mixin {
+        addMixinsToModManifest = true
 
-            from(components["java"])
+        configs.register("wcifs")
+    }
+}
+
+msPublishing {
+    mpp {
+        file = modstitch.finalJarTask.get().archiveFile
+        displayName = "${modstitch.metadata.modName.get()} ${modstitch.metadata.modVersion.get()}"
+        type = STABLE
+        dryRun = providers.gradleProperty("modrinth_token").orNull == null
+
+        modrinth {
+            accessToken = providers.gradleProperty("modrinth_token").orNull
+
+            projectId = "LymwTWwC"
+            changelog = rootProject.file("CHANGELOG.md").readText()
+            projectDescription = rootProject.file("README.md").readText()
+
+            minecraftVersionRange {
+                prop("publish.minecraft_version.min") { start = it }
+                prop("publish.minecraft_version.max") { end = it }
+            }
+
+            requires("fabric-api")
         }
     }
 }
-*/
+
+stonecutter {
+    var loader: String = name.split("-")[1]
+
+    constants.match(
+        loader,
+        "fabric",
+        "neoforge"
+    )
+}
+
+dependencies {
+    modstitch.loom {
+        modstitchModImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
+    }
+}
+
+tasks.register<Copy>("buildAndCollect") {
+    group = "build"
+    from(modstitch.finalJarTask.map { it.archiveFile } )
+    into(rootProject.layout.buildDirectory.dir("collected/${modstitch.metadata.modVersion.get().split("+")[0]}"))
+    dependsOn("build")
+}

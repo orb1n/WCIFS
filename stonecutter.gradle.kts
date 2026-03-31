@@ -1,21 +1,19 @@
 plugins {
     id("dev.kikugie.stonecutter")
-    id("fabric-loom") version "1.11-SNAPSHOT" apply false
-    id("me.modmuss50.mod-publish-plugin") version "0.8.+" apply false // Publishes builds to hosting websites
 }
 
-stonecutter active "1.21.8"
+stonecutter.active("26.1-fabric")
 
-
-// Make newer versions be published last
-stonecutter tasks {
+stonecutter.tasks {
     order("publishModrinth")
 }
 
-// See https://stonecutter.kikugie.dev/wiki/config/params
-stonecutter parameters {
-    swaps["mod_version"] = "\"" + property("mod.version") + "\";"
-    swaps["minecraft"] = "\"" + node.metadata.version + "\";"
-    constants["release"] = property("mod.id") != "template"
-    dependencies["fapi"] = node.project.property("deps.fabric_api") as String
+allprojects {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven("https://maven.neoforged.net/releases")
+        maven("https://maven.fabricmc.net/")
+        maven("https://maven.parchmentmc.org/")
+    }
 }

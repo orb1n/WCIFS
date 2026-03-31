@@ -10,9 +10,9 @@ The simple Bedtime / "When can I finally sleep" (WCIFS) mod shows you how long y
 
 | Minecraft Version | Status    |
 |-------------------|-----------|
-| 1.19.2 - 1.21.8   | Supported |
-| 1.19.1            | Supported |
-| 1.19              | Supported |
+| 26.1              | Supported |
+| 1.19.2 - 1.21.11  | Supported |
+| 1.19 - 1.19.1     | Supported |
 | 1.17 - 1.18.2     | Supported |
 
-<sub>This code is licensed under the [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed) license.<sub>
+<sub>This code is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed).<sub>
