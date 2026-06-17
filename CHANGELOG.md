@@ -1,1 +1,1 @@
-- now supports NeoForge and 26.1
+- now supports 26.2
