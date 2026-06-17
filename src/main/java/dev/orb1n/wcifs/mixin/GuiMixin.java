@@ -1,6 +1,6 @@
-package dev.bigbrainrobin29.wcifs.mixin;
+package dev.orb1n.wcifs.mixin;
 
-import dev.bigbrainrobin29.wcifs.WCIFS;
+import dev.orb1n.wcifs.WCIFS;
 //? >= 26.2
 import net.minecraft.client.gui.Hud;
 //? < 26.2

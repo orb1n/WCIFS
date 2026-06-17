@@ -1,4 +1,4 @@
-package dev.bigbrainrobin29.wcifs;
+package dev.orb1n.wcifs;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;

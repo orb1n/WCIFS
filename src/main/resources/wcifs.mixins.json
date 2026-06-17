@@ -1,5 +1,5 @@
 {
-  "package": "dev.bigbrainrobin29.wcifs.mixin",
+  "package": "dev.orb1n.wcifs.mixin",
   "required": true,
   "minVersion": "0.8",
   "injectors": {

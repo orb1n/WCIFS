@@ -19,15 +19,15 @@ modstitch {
     metadata {
         modId = "wcifs"
         modName = "WCIFS"
-        modVersion = "1.3.0+${stonecutter.current.project}"
+        modVersion = "1.3.1+${stonecutter.current.project}"
         modDescription = "This mod tells you how long it is until night when clicking on a bed."
         modLicense = "CC BY-NC-SA 4.0"
-        modGroup = "dev.bigbrainrobin29"
-        modAuthor = "BigBrainRobin29"
+        modGroup = "dev.orb1n"
+        modAuthor = "orb1n"
 
         replacementProperties.put("mod_modrinth", "https://modrinth.com/mod/wcifs")
-        replacementProperties.put("mod_sources", "https://github.com/BigBrainRobin29/WCIFS")
-        replacementProperties.put("mod_issues", "https://github.com/BigBrainRobin29/WCIFS/issues")
+        replacementProperties.put("mod_sources", "https://github.com/orb1n/WCIFS")
+        replacementProperties.put("mod_issues", "https://github.com/orb1n/WCIFS/issues")
         replacementProperties.put("minecraft", property("deps.minecraft.constraint") as String)
         replacementProperties.put("fabric_api", if (stonecutter.eval(stonecutter.current.version, ">=1.19.2")) "fabric-api" else "fabric")
     }
